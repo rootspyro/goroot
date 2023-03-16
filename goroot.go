@@ -11,30 +11,42 @@ import (
 // ROUTER
 
 type Router struct {
-	rules map[string]http.HandlerFunc
+	rules map[string]map[string]http.HandlerFunc
 }
 
-func(router *Router)findHandler(path string) (http.HandlerFunc, bool) {
-	handler, exits := router.rules[path]
-	return handler, exits
+func(router *Router)findHandler(path string, method string) (http.HandlerFunc, bool, bool) {
+
+	_, pathExists := router.rules[path]
+
+	handler, methodExists := router.rules[path][method]
+
+	return handler, pathExists, methodExists 
 }
 
 func(router *Router)ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	reqPath := r.URL.Path
 
-	// Search if the path exists
-	handler, exits := router.findHandler(reqPath)	
-
-	// If path don't exists return 404 not found
-	if !exits {
-		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte(reqPath + " not Found!"))
-		return
-	}
-
 	// global request log
 	log.Printf("%s:%s - %s", r.Method, reqPath, r.Host)
+
+	// Search if the path exists
+	handler, pathExists, methodExists := router.findHandler(reqPath, r.Method)	
+
+	// If path don't exists returns 404 not found
+	if !pathExists {
+
+		w.WriteHeader(http.StatusNotFound)
+		return
+	
+	} 
+
+	// If path exists but not the method then returns 405 method not allowed
+	if !methodExists {
+
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return	
+	}
 	
 	handler(w,r)
 }
@@ -65,13 +77,13 @@ func New() *Server {
 	return &Server{
 		port: *p,
 		router: &Router{
-			rules: make(map[string]http.HandlerFunc),
+			rules: make(map[string]map[string]http.HandlerFunc),
 		},
 	}
 }
 
-func(s *Server)Handle(path string, handler http.HandlerFunc) {
-	s.router.rules[path] = handler
+func(s *Server)Handle(method, path string, handler http.HandlerFunc) {
+	s.router.rules[path][method] = handler
 }
 
 func(s *Server)AddMiddleware(handler http.HandlerFunc, middlewares ...Middleware) http.HandlerFunc {
