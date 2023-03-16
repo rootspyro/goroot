@@ -3,6 +3,7 @@ package goroot
 import (
 	"flag"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 )
@@ -31,9 +32,11 @@ func(router *Router)ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(reqPath + " not Found!"))
 		return
 	}
+
+	// global request log
+	log.Printf("%s:%s - %s", r.Method, r.URL.Path, r.Host)
 	
 	handler(w,r)
-
 }
 
 // SERVER
@@ -67,8 +70,16 @@ func New() *Server {
 	}
 }
 
-func(s *Server) Handle(path string, handler http.HandlerFunc) {
+func(s *Server)Handle(path string, handler http.HandlerFunc) {
 	s.router.rules[path] = handler
+}
+
+func(s *Server)AddMiddleware(handler http.HandlerFunc, middlewares ...Middleware) http.HandlerFunc {
+	for _, m := range middlewares {
+		handler = m(handler)
+	}
+
+	return handler
 }
 
 func(s Server) Listen() {
