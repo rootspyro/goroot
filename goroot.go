@@ -13,8 +13,27 @@ type Router struct {
 	rules map[string]http.HandlerFunc
 }
 
+func(router *Router)findHandler(path string) (http.HandlerFunc, bool) {
+	handler, exits := router.rules[path]
+	return handler, exits
+}
+
 func(router *Router)ServeHTTP(w http.ResponseWriter, r *http.Request) {
+
+	reqPath := r.URL.Path
+
+	// Search if the path exists
+	handler, exits := router.findHandler(reqPath)	
+
+	// If path don't exists return 404 not found
+	if !exits {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte(reqPath + " not Found!"))
+		return
+	}
 	
+	handler(w,r)
+
 }
 
 // SERVER
@@ -46,6 +65,10 @@ func New() *Server {
 			rules: make(map[string]http.HandlerFunc),
 		},
 	}
+}
+
+func(s *Server) Handle(path string, handler http.HandlerFunc) {
+	s.router.rules[path] = handler
 }
 
 func(s Server) Listen() {
