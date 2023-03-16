@@ -34,7 +34,7 @@ func(router *Router)ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// global request log
-	log.Printf("%s:%s - %s", r.Method, r.URL.Path, r.Host)
+	log.Printf("%s:%s - %s", r.Method, reqPath, r.Host)
 	
 	handler(w,r)
 }
