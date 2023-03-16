@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/rootspyro/goroot/middlewares"
 )
 
 // ROUTER
@@ -51,6 +53,7 @@ func(router *Router)ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	handler(w,r)
 }
 
+
 // SERVER
 
 type Server struct {
@@ -94,7 +97,7 @@ func(s *Server)Handle(method, path string, handler http.HandlerFunc) {
 
 }
 
-func(s *Server)AddMiddleware(handler http.HandlerFunc, middlewares ...Middleware) http.HandlerFunc {
+func(s *Server)AddMiddleware(handler http.HandlerFunc, middlewares ...middlewares.Middleware) http.HandlerFunc {
 	for _, m := range middlewares {
 		handler = m(handler)
 	}
