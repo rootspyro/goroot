@@ -9,14 +9,13 @@ import (
 
 	"github.com/rootspyro/goroot/middlewares"
 )
-
 // ROUTER
 
 type Router struct {
-	rules map[string]map[string]http.HandlerFunc
+	rules map[string]map[string]Handler
 }
 
-func(router *Router)findHandler(path string, method string) (http.HandlerFunc, bool, bool) {
+func(router *Router)findHandler(path string, method string) (Handler, bool, bool) {
 
 	_, pathExists := router.rules[path]
 
@@ -50,7 +49,7 @@ func(router *Router)ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return	
 	}
 	
-	handler(w,r)
+	handler(&Root{ Writter: w, Request: r })
 }
 
 
@@ -80,17 +79,17 @@ func New() *Server {
 	return &Server{
 		port: *p,
 		router: &Router{
-			rules: make(map[string]map[string]http.HandlerFunc),
+			rules: make(map[string]map[string]Handler),
 		},
 	}
 }
 
-func(s *Server)Handle(method, path string, handler http.HandlerFunc) {
+func(s *Server)Handle(method, path string, handler Handler) {
 
 	_, exists := s.router.rules[path]
 
 	if !exists {
-		s.router.rules[path] = make(map[string]http.HandlerFunc)
+		s.router.rules[path] = make(map[string]Handler)
 	}
 	
 	s.router.rules[path][method] = handler
