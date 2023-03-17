@@ -49,7 +49,7 @@ func(router *Router)ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return	
 	}
 	
-	handler(&Root{ Writter: w, Request: r })
+	handler(&Root{ writter: w, request: r })
 }
 
 
