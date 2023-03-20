@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-
-	"github.com/rootspyro/goroot/middlewares"
 )
 
 // SERVER
@@ -82,7 +80,7 @@ func(s *Server)Delete(path string, handler Handler) {
 }
 
 
-func(s *Server)AddMiddleware(handler http.HandlerFunc, middlewares ...middlewares.Middleware) http.HandlerFunc {
+func(s *Server)AddMiddleware(handler Handler, middlewares ...Middleware) Handler {
 	for _, m := range middlewares {
 		handler = m(handler)
 	}
