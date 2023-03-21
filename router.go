@@ -12,7 +12,12 @@ import (
 type Router struct {
 	//Base Node
 	node *Node
+
+	// Cors Configuration
 	cors *cors.Cors
+
+	// Global Middlewares
+	middlewares *[]Middleware
 }
 
 type Node struct {
@@ -93,8 +98,10 @@ func(router *Router)findHandler(path, method string, root *Root) (Handler,  bool
 
 func(router *Router)ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
+	origin := r.Header.Get("Origin")
+
 	// CORS
-	w.Header().Set("Access-Control-Allow-Origin", router.cors.ValidateOrigin(r.Header.Get("Origin")))
+	w.Header().Set("Access-Control-Allow-Origin", router.cors.ValidateOrigin(origin))
 	w.Header().Set("Access-Control-Allow-Methods", router.cors.AllowedMethods())
 	w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, Authorization")
 
@@ -107,7 +114,12 @@ func(router *Router)ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	reqPath := r.URL.Path
 
 	// global request log
-	log.Printf("%s:%s - %s", r.Method, reqPath, r.Header.Get("Origin"))
+
+	if origin == "" {
+		origin = r.Host
+	}
+
+	log.Printf("%s:%s - %s", r.Method, reqPath, origin)
 
 	rootHandler := &Root{
 		writter: w,
@@ -133,9 +145,20 @@ func(router *Router)ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return	
 	}
 
+	// Assign the global middlewares
+	handler = router.SetGlobalMiddlewares(handler)
 	handler(rootHandler)
 }
 
+// assign the list of middlewares to the handler
+func(router *Router) SetGlobalMiddlewares(handler Handler) Handler {
+
+	for _, midd := range *router.middlewares {
+		handler = midd(handler)
+	}
+
+	return handler
+}
 
 // This function split the path and removes any empty value 
 func(router *Router) explodePath(path string) []string {

@@ -19,6 +19,9 @@ type Server struct {
 
 type Config struct {
 	Cors *cors.Cors
+
+	// List of Global Middlewares
+	Middlewares []Middleware
 }
 
 func New(config Config) *Server {
@@ -38,8 +41,10 @@ func New(config Config) *Server {
 
 	return &Server{
 		port: *p,
+		config: &config,
 		router: &Router{
 			cors: config.Cors,
+			middlewares: &config.Middlewares,
 			node: &Node{
 				path: "/",
 				actions: make(map[string]*Handler),
@@ -122,6 +127,7 @@ func(s *Server)Delete(path string, handler Handler) {
 
 
 func(s *Server)AddMiddleware(handler Handler, middlewares ...Middleware) Handler {
+
 	for _, m := range middlewares {
 		handler = m(handler)
 	}
@@ -137,4 +143,12 @@ func(s Server) Listen() {
 	http.ListenAndServe(":" + s.port, nil)
 } 
 
+// Set the list of Global Middlewares
+func(s Server) Middlewares(middlewares ...Middleware) {
+
+	for _, midd := range middlewares {
+		s.config.Middlewares = append(s.config.Middlewares, midd)
+	}
+
+}
 
