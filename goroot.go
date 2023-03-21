@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+
+	"github.com/rootspyro/goroot/cors"
 )
 
 // SERVER
@@ -12,10 +14,14 @@ import (
 type Server struct {
 	port string
 	router *Router
+	config *Config
 }
 
+type Config struct {
+	Cors *cors.Cors
+}
 
-func New() *Server {
+func New(config Config) *Server {
 
 	var defPort string = "3000"
 
@@ -33,6 +39,7 @@ func New() *Server {
 	return &Server{
 		port: *p,
 		router: &Router{
+			cors: config.Cors,
 			node: &Node{
 				path: "/",
 				actions: make(map[string]*Handler),
@@ -125,6 +132,7 @@ func(s *Server)AddMiddleware(handler Handler, middlewares ...Middleware) Handler
 func(s Server) Listen() {
 	fmt.Println("Server listening in 0.0.0.0:" + s.port + "!")
 
+	
 	http.Handle("/", s.router)
 	http.ListenAndServe(":" + s.port, nil)
 } 
