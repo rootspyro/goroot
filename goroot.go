@@ -34,6 +34,11 @@ func New() *Server {
 		port: *p,
 		router: &Router{
 			rules: make(map[string]map[string]Handler),
+			node: &Node{
+				path: "/",
+				actions: make(map[string]*Handler),
+				children: make(map[string]*Node),
+			},
 		},
 	}
 }
@@ -41,14 +46,44 @@ func New() *Server {
 
 // This function creates a new Endpoint in the router
 func(s *Server)Endpoint(method, path string, handler Handler) {
-
-	_, exists := s.router.rules[path]
-
-	if !exists {
-		s.router.rules[path] = make(map[string]Handler)
-	}
 	
-	s.router.rules[path][method] = handler
+	currentNode := s.router.node
+
+	if path == "/" {
+		currentNode.actions[method] = &handler 
+		return
+	}
+
+	ep := s.router.explodePath(path)
+
+	for i, label := range ep {
+		nextNode, exists := currentNode.children[label]	
+
+		// If child node exists then update the current node for the next loop
+		if exists {
+			currentNode = nextNode
+		}
+
+		// If child node don't exists then create it
+		if !exists { 
+			currentNode.children[label] = &Node{
+				path: label,
+				actions: make(map[string]*Handler),
+				children: make(map[string]*Node),
+			}
+
+			currentNode = currentNode.children[label]
+
+		}
+
+		// If is the last loop, then create the action in the current node
+		if i == len(ep) - 1 {
+			currentNode.path = label
+			currentNode.actions[method] = &handler
+			break
+		}
+
+	}
 
 }
 
