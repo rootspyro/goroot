@@ -12,6 +12,7 @@ type Root struct {
 	writter http.ResponseWriter
 	request *http.Request
 	_status int
+	RequestParams map[string]any
 }
 
 type Handler func( root *Root )
