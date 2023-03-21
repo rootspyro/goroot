@@ -8,9 +8,6 @@ import (
 )
 
 type Router struct {
-
-	rules map[string]map[string]Handler
-	
 	//Base Node
 	node *Node
 }

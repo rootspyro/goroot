@@ -2,6 +2,7 @@ package goroot
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"log"
 	"net/http"
 )
@@ -121,3 +122,10 @@ func(root *Root)Json(data interface {}) {
 	root.writter.Write(payload)
 }
 
+func(root *Root) Body() ([]byte, error) {
+
+	body, err := ioutil.ReadAll(root.request.Body)	
+
+	return body, err
+
+}

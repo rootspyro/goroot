@@ -33,7 +33,6 @@ func New() *Server {
 	return &Server{
 		port: *p,
 		router: &Router{
-			rules: make(map[string]map[string]Handler),
 			node: &Node{
 				path: "/",
 				actions: make(map[string]*Handler),
@@ -50,7 +49,7 @@ func(s *Server)Endpoint(method, path string, handler Handler) {
 	currentNode := s.router.node
 
 	if path == "/" {
-		currentNode.actions[method] = &handler 
+		currentNode.actions[method] = &handler
 		return
 	}
 
