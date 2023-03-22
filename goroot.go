@@ -68,6 +68,10 @@ func New(config Config) *Server {
 	}
 }
 
+// function to server the static files. The function recieves the path for the url and the src path for the local files
+func(s *Server)StaticFiles(path, src string) {
+	http.Handle(path + "/", http.StripPrefix(path, http.FileServer(http.Dir(src))))
+}
 
 // This function creates a new Endpoint in the router
 func(s *Server)Endpoint(method, path string, handler Handler) {

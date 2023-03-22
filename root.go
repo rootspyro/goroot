@@ -2,6 +2,7 @@ package goroot
 
 import (
 	"encoding/json"
+	"fmt"
 	"html/template"
 	"io/ioutil"
 	"log"
@@ -138,7 +139,7 @@ func(root *Root)Json(data interface {}) {
 func(root *Root)RenderTempate( file string, data any) {
 
 	files := root.pages.Templates 
-	files = append(files, file)
+	files = append(files, fmt.Sprintf("%s/%s.html", root.pages.TemplatesPath, file ) )
 
 	ts, err := template.ParseFiles(files...)
 	
