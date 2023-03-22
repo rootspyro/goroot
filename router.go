@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/rootspyro/goroot/cors"
+	"github.com/rootspyro/goroot/pages"
 )
 
 type Router struct {
@@ -18,6 +19,9 @@ type Router struct {
 
 	// Global Middlewares
 	middlewares *[]Middleware
+
+	//Html rendering config
+	pages *pages.Pages
 }
 
 type Node struct {
@@ -124,7 +128,8 @@ func(router *Router)ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	rootHandler := &Root{
 		writter: w,
 		request: r,
-		RequestParams: make(map[string]any),
+		RequestParams: make(map[string]string),
+		pages: router.pages,
 	}
 
 	// Search if the path exists

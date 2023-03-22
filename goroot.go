@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/rootspyro/goroot/cors"
+	"github.com/rootspyro/goroot/pages"
 )
 
 // SERVER
@@ -18,10 +19,15 @@ type Server struct {
 }
 
 type Config struct {
+
+	// Cors Config
 	Cors *cors.Cors
 
 	// List of Global Middlewares
 	Middlewares []Middleware
+
+	// Html rendering config
+	Pages *pages.Pages
 }
 
 func New(config Config) *Server {
@@ -39,12 +45,20 @@ func New(config Config) *Server {
 	p := flag.String("p", defPort, "Server port")
 	flag.Parse()
 
+	if config.Cors == nil {
+		config.Cors = cors.New(cors.Config{
+			Origins: []string{"*"},
+			Methods: []string{"GET", "POST", "PUT", "PATCH","DELETE"},
+		})
+	}
+
 	return &Server{
 		port: *p,
 		config: &config,
 		router: &Router{
 			cors: config.Cors,
 			middlewares: &config.Middlewares,
+			pages: config.Pages,
 			node: &Node{
 				path: "/",
 				actions: make(map[string]*Handler),

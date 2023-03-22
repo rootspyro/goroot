@@ -2,9 +2,12 @@ package goroot
 
 import (
 	"encoding/json"
+	"html/template"
 	"io/ioutil"
 	"log"
 	"net/http"
+
+	"github.com/rootspyro/goroot/pages"
 )
 
 // Root it's the kernel of the handlers of GoRoot
@@ -13,7 +16,13 @@ type Root struct {
 	writter http.ResponseWriter
 	request *http.Request
 	_status int
-	RequestParams map[string]any
+	RequestParams map[string]string
+
+	//html base template
+	baseTemplate string
+	templates []string
+
+	pages *pages.Pages
 }
 
 type Handler func( root *Root )
@@ -120,6 +129,25 @@ func(root *Root)Json(data interface {}) {
 	root.writter.Header().Set("Content-Type", "application/json")
 	root.writter.WriteHeader(httpCode)
 	root.writter.Write(payload)
+}
+
+// HTML RENDERING
+
+//Render an HTML template
+//RenderTempate("./template/myTemplate.html")
+func(root *Root)RenderTempate( file string, data any) {
+
+	files := root.pages.Templates 
+	files = append(files, file)
+
+	ts, err := template.ParseFiles(files...)
+	
+	if err != nil {
+		log.Println(err)
+	} else {
+		ts.ExecuteTemplate(root.writter, root.pages.Base, data)
+	}
+
 }
 
 func(root *Root) Body() ([]byte, error) {
