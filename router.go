@@ -22,6 +22,8 @@ type Router struct {
 
 	//Html rendering config
 	pages *pages.Pages
+
+	notFound Handler
 }
 
 type Node struct {
@@ -49,13 +51,13 @@ func(router *Router)findHandler(path, method string, root *Root) (Handler,  bool
 				} else {
 
 					// Boolean value for search if exists an children with a parameter as path. Example = /{userID}
-					founded := false
+					foundedParam := false
 
 					for path, node := range currentNode.children {
 
 						if router.isParameter(path) {
 
-							founded = true
+							foundedParam = true
 							root.RequestParams[router.clearParam(path)]	= label 
 							currentNode = node
 
@@ -64,8 +66,7 @@ func(router *Router)findHandler(path, method string, root *Root) (Handler,  bool
 						}
 						
 					}
-
-					if founded {
+					if foundedParam {
 						// if node exists and has children then continue
 						if len(currentNode.children) > 0 { 
 							continue
@@ -73,7 +74,6 @@ func(router *Router)findHandler(path, method string, root *Root) (Handler,  bool
 							break
 						}
 					} else {
-						
 						// 404 
 						return nil, false, false 
 					}
@@ -92,6 +92,9 @@ func(router *Router)findHandler(path, method string, root *Root) (Handler,  bool
 	handler, exists := currentNode.actions[method]
 
 	if !exists {
+		if len(currentNode.actions) == 0 { 
+			return nil, false, false
+		}
 		return nil, true, false
 	} 
 
@@ -138,7 +141,7 @@ func(router *Router)ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// If path don't exists returns 404 not found
 	if !pathExists {
 
-		w.WriteHeader(http.StatusNotFound)
+		router.notFound(rootHandler)
 		return
 	
 	} 
@@ -147,6 +150,7 @@ func(router *Router)ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if !methodExists {
 
 		w.WriteHeader(http.StatusMethodNotAllowed)
+
 		return	
 	}
 

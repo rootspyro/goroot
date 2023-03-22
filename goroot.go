@@ -59,6 +59,9 @@ func New(config Config) *Server {
 			cors: config.Cors,
 			middlewares: &config.Middlewares,
 			pages: config.Pages,
+			notFound: func(root *Root) {
+				root.NotFound()
+			},
 			node: &Node{
 				path: "/",
 				actions: make(map[string]*Handler),
@@ -71,6 +74,10 @@ func New(config Config) *Server {
 // function to server the static files. The function recieves the path for the url and the src path for the local files
 func(s *Server)StaticFiles(path, src string) {
 	http.Handle(path + "/", http.StripPrefix(path, http.FileServer(http.Dir(src))))
+}
+
+func(s *Server)NotFoundHandler( handler Handler ) {
+	s.router.notFound = handler
 }
 
 // This function creates a new Endpoint in the router
