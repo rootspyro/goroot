@@ -56,7 +56,7 @@ go run main.go
 
 You have created a web server with GoRoot.
 
-Follow the [Documentation]() to keep learning!.
+Follow the [Documentation](docs/README.md) to keep learning!.
 
 
 
