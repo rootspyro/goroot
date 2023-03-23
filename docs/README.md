@@ -7,9 +7,9 @@
 		 - [1.1.2 Cors](#cors-policy)
 		 - [1.1.3 Pages](#pages)
 	- [1.2 Endpoints](#endpoints)
-	- [1.3 Static Files]()
+	- [1.3 Static Files](#static-files)
 
-- [2. Handlers]()
+- [2. Handlers](#handlers)
 	- [2.1 Root]()
 		- [2.1.1 Status]()
 		- [2.1.2 Responses]()
@@ -23,7 +23,11 @@
 
 The server object it's the main interaction interface between the programmer and the module. It is used to configure the application, create rules, routes and run the server.
 
-To create a new server, simply create an object with the goroot.New() function using the configuration structure as a parameter.
+To create a new server, simply create an object with the `goroot.New()` function using the configuration structure as a parameter.
+
+
+The next step would be to run the server, for this our new server object has the Listen() function, this function executes the server listening on the default port 3000.
+
 ```go
 //main.go
 package main
@@ -51,7 +55,7 @@ func main() {
 
 
 ### Configuration
-The function New() receives as parameter the Config{} object. In this object we can define different rules and parameters for the correct operation of our server.
+The function `New()` receives as parameter the `Config{}` object. In this object we can define different rules and parameters for the correct operation of our server.
 
 #### Global Middlewares
 
@@ -110,7 +114,7 @@ My Handler
 
 #### Cors Policy
 
-It is highly recommended to configure the Cors Policy on our server, because if we leave the Cors configuration empty then GoRoot will set the Allowed Origins as "*".
+It is highly recommended to configure the Cors Policy on our server, because if we leave the Cors configuration empty then GoRoot will set the Allowed Origins as `"*"`.
 ```go
 // main.go
 package main
@@ -140,11 +144,11 @@ func main() {
 
 If we want to render html files with GoRoot, we will need to indicate a specific configuration on our files.
 
-To configure the html rendering we are going to use the pages.NewPages() function, this function requires 3 important parameters:
+To configure the html rendering we are going to use the `pages.NewPages()` function, this function requires three important parameters:
 
-- __baseName:__ The name of the main layout template (Example: "layout")
-- __tmpPath:__ The path of the .html files (Example: "./templates")
-- __templates:__ The list of the required templates and components excluding the content files (Example: ["index", "navbar", "footer"])
+- __baseName:__ The name of the main layout template. Example: "layout".
+- __tmpPath:__ The path of the .html files. Example: "./templates".
+- __templates:__ The list of the required templates and components excluding the content files. Example: ["index", "navbar", "footer"].
 
 ```go
 /*
@@ -195,3 +199,68 @@ type PageData struct {
 We will return to this example later in the section on [HTML Rendering](#html-rendering).
 
 ### Endpoints
+The server object has a number of functions to create the routes of your application that get as parameters:
+- __path:__ the route. Example: "/users"
+- __handler:__ the handler function 
+
+```go
+func main() {
+
+	server := goroot.New(goroot.Config{})
+
+	server.Get("/", func(root *goroot.Root) {
+		root.Send("This is the GET Method of the Route: /")
+	})
+
+	server.Post("/", func(root *goroot.Root) {
+		root.Send("This is the POST Method of the Route: /")
+	})
+
+	server.Put("/", func(root *goroot.Root) {
+		root.Send("This is the PUT Method of the Route: /")
+	})
+
+	server.Patch("/", func(root *goroot.Root) {
+		root.Send("This is the PATCH Method of the Route: /")
+	})
+
+	server.Delete("/", func(root *goroot.Root) {
+		root.Send("This is the DELETE Method of the Route: /")
+	})
+
+	server.Listen()
+}
+```
+
+### Static Files
+
+GoRoot has the `StaticFiles()` function that allows you to serve static files and resources easily. It receives two parameters:
+- __path:__ the route from which the resources will be served. Example: "/static"
+- __src:__ the local directory of the files to serve. Example: "./frontend/static"
+
+```go
+/*
+Files Structure:
+ - main.go
+ - frontend/
+	 - templates/
+	 - static/
+		 - css/
+		 - js/
+		 - pics/
+			 - icon.png
+*/
+func main() {
+
+	server := goroot.New(goroot.Config{})
+
+	server.StaticFiles("/static", "./frontend/static")
+	// The resources will be served in http://localhost:3000/static
+	// Example: http://localhost:3000/static/pics/icon.png
+	
+	server.Listen()
+}
+
+```
+
+## Handlers
