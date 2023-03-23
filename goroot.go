@@ -161,8 +161,7 @@ func(s *Server)AddMiddleware(handler Handler, middlewares ...Middleware) Handler
 }
 
 func(s Server) Listen() {
-	fmt.Println("Server listening in 0.0.0.0:" + s.port + "!")
-
+	fmt.Println("Server listening on 0.0.0.0:" + s.port + "!")
 	
 	http.Handle("/", s.router)
 	http.ListenAndServe(":" + s.port, nil)
