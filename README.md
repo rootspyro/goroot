@@ -1,4 +1,6 @@
 # GoRoot
+![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/rootspyro/goroot?label=version&style=for-the-badge)
+![GitHub go.mod Go version (subdirectory of monorepo)](https://img.shields.io/github/go-mod/go-version/rootspyro/goroot?style=for-the-badge)
 
 GoRoot it's a golang module or micro-framework for the backend development.
 
