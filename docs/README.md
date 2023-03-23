@@ -10,10 +10,10 @@
 	- [1.3 Static Files](#static-files)
 
 - [2. Handlers](#handlers)
-	- [2.1 Root]()
-		- [2.1.1 Status]()
-		- [2.1.2 Responses]()
-	- [2.2 Middlewares]()
+	- [2.1 Root](#root)
+		- [2.1.1 Status](#status)
+		- [2.1.2 Responses](#responses)
+	- [2.2 Middlewares](#middlewares)
 
 - [3. HTML Rendering]()
 	- [3.1 File structures]()
@@ -232,6 +232,28 @@ func main() {
 }
 ```
 
+You can also define dynamic routes by enclosing between `{}` the name of the parameters you want to receive from the request. Example:
+
+```go
+func main() {
+
+	server := goroot.New(goroot.Config{})
+
+	server.Get("/users", func(root *goroot.Root) {
+		users := services.GetUsers()
+		root.Json(users)
+	})
+	
+	server.Get("/users/{userID}", func(root *goroot.Root){
+		userID := root.RequestParams["userID"]
+		user := services.GetUser(userID)
+		root.Json(users)
+	})
+	
+	server.Listen()
+}
+```
+
 ### Static Files
 
 GoRoot has the `StaticFiles()` function that allows you to serve static files and resources easily. It receives two parameters:
@@ -264,3 +286,127 @@ func main() {
 ```
 
 ## Handlers
+
+Handlers are the functions related to the application endpoints, they manage what happens when an http request arrives at the server.
+
+A GoRoot Handler consists of a simple function that receives as a single parameter an object of type Root.
+
+```go
+// handlers/examplefile.go
+package handlers
+
+func ExampleHandler(root *goroot.Root){
+	root.OK().Send("Hello world from an example handler!")
+}
+```
+
+### Root 
+The Root object is the hearth of the handlers, it has the methods to send and receive data between the server and the client as:
+
+	- HTTP Statuses
+	- HTTP Requests body
+	- HTTP Requests parameters and queries
+	- Responses format: Plain Text, Json, Html rendering.
+
+Some relevant functions are the different statuses and response formats that can be send it by the handler.
+
+#### Status
+
+The `Status()` function receives as a single parameter an integer with the HTTP code that we want to write in the response header.
+
+```go
+// handlers/examplefile.go
+package handlers
+
+func ExampleHandler(root *goroot.Root){
+	// HTTP - 404 NOT FOUND
+	root.Status(404)
+}
+```
+
+For this purpose there is also a list of functions for the most regularly used HTTP codes.
+
+```go
+root.OK() // HTTP - 200 OK
+root.Created() // HTTP - 201 Created
+
+root.BadRequest() // HTTP - 400 Bad Request
+root.Unauthorized() // HTTP - 401 Unauthorized
+root.Forbidden() // HTTP - 403 Forbidden
+root.NotFound() // HTTP - 404 Not Found
+root.MethodNotAllowed() // HTTP - 405 Method Not Allowed
+
+root.InternalServerError() // HTTP - 500 Internal Server Error 
+root.NotImplemendted() // HTTP - 501 Not Implemented
+```
+Very usefully, but not enough, most of the time we will need to send a message  to the client.
+
+
+#### Responses
+Currently we can send three types of responses with GoRoot:
+ - Plaint Text
+ - Json
+ - Html
+
+We going to talk more about html in the [HTML Rendering](#html-rendering) section. Let's focus on the other two functions, `Send()` and `Json()`.
+
+```go
+server.Get("/", func(root *goroot.Root) {
+	// A plain text response
+	root.Send("This is the GET Method of the Route: /")
+})
+	
+server.GetUser("/users", func(root *goroot.Root){
+	// A json response
+	exampleUser := User{ID: 1, Username: "rootspyro"}
+	root.Json(exampleUser)
+})
+
+type User struct {
+	ID int `json:"id"`
+	Username string `json:"username"`
+}
+```
+In the same way, we can combine status methods with response methods.
+
+```go
+// Simulation of a POST request
+server.Post("/users", func(root *goroot.Root) {
+	
+	body, _ := root.Body()
+	var reqUser User
+	json.Unmarshal(body, &reqUser)
+			
+	newUser := services.NewUSer(reqUser)
+	root.Created().Json(newUser) // json response with 201 Code
+})
+	
+type User struct {
+	ID int `json:"id"`
+	Username string `json:"username"`
+}
+```
+
+### Middlewares
+We already talked about [Global Midlewares](#global-middleware), but if we want to create a middleware exclusively for a handler or several handlers we have to use the `AddMiddleware()` function.  
+
+Returning to the last example concerning middlewares:
+
+```go
+func main() {
+	server := goroot.New(goroot.Config{})
+	
+	// In this case, the middleware is assigned only to MyHandler.
+	server.Get("/", server.AddMiddleware(
+		MyHandler,
+		middlewares.Example1,
+	))
+	
+	server.Listen()
+}
+
+func MyHandler(root goroot.Root){
+		fmt.Println("My Handler")
+		root.OK().Send("Hello World")
+}
+```
