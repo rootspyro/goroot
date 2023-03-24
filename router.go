@@ -130,7 +130,7 @@ func(router *Router)ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	rootHandler := &Root{
 		writter: w,
-		request: r,
+		Request: r,
 		RequestParams: make(map[string]string),
 		pages: router.pages,
 	}
