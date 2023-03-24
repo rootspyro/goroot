@@ -15,7 +15,7 @@ import (
 
 type Root struct {
 	writter http.ResponseWriter
-	request *http.Request
+	Request *http.Request
 	_status int
 	RequestParams map[string]string
 
@@ -153,7 +153,7 @@ func(root *Root)RenderTempate( file string, data any) {
 
 func(root *Root) Body() ([]byte, error) {
 
-	body, err := ioutil.ReadAll(root.request.Body)	
+	body, err := ioutil.ReadAll(root.Request.Body)	
 
 	return body, err
 
