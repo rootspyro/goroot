@@ -1,4 +1,4 @@
-# GoRoot Documentation
+# GoRoot Documentation 📖
 
 ## Contents
  - [1. Server](#server)
@@ -15,8 +15,7 @@
 		- [2.1.2 Responses](#responses)
 	- [2.2 Middlewares](#middlewares)
 
-- [3. HTML Rendering]()
-	- [3.1 File structures]()
+- [3. HTML Rendering](#html-rendering)
 
 
 ## Server
@@ -410,3 +409,174 @@ func MyHandler(root goroot.Root){
 		root.OK().Send("Hello World")
 }
 ```
+
+## Html Rendering
+Continuing with the example seen in the [Pages](#pages) section, it is time to explain the configuration and structure that GoRoot uses to serve html templates.
+
+First we gonna define an example code for the HTML templates.
+
+### index.html
+
+In this file the base template is defined as 'layout' and is the main structure for the components and content.
+```html
+<!-- Here we define the name of the base template as 'layout' -->
+{{define "layout"}}
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>{{.Title}}</title>
+	</head>
+	<body>
+		<header>
+			{{template "navbar" .}} <!-- template defined in navbar.html -->
+		</header>
+
+		<div class="main-container">
+			{{template "content" .}} 
+			<!-- With the "content" tag we are going to define
+			the html code of our different pages -->
+		</div>
+		
+		<footer>
+			{{template "footer" .}} <!-- template defined in footer.html -->
+		</footer>
+	</body>
+</html>
+{{end}}
+```
+### navbar.html
+
+In this file the navbar template is defined.
+```html
+{{define "navbar"}}
+<div>
+	<nav>
+		<ul>
+			<li><a href="/">Home</a></li>
+		</ul>
+	</nav>
+</div>
+{{end}}
+```
+
+### footer.html
+
+In this file the footer template is defined.
+```html
+{{define "footer"}}
+<div>
+	<p>My footer</p>
+</div>
+{{end}}
+```
+
+
+In this example we have a main template (index.html) and a number of components requested in the main template (navbar.html and footer.html). 
+
+These are the files that we must indicate in the configuration of the pages, since we need them to render and serve all the content.
+
+```go
+package main
+
+import (
+	"github.com/rootspyro/goroot"
+	"github.com/rootspyro/goroot/pages"
+)
+
+func main() {
+
+	pagesConfig := pages.NewPages(
+		"layout", // the main template that was defined in index.html
+		"./templates", // the local dir of the html templates in the code
+		[]string{ // the name of the essential files without the extension .html
+			"index",
+			"navbar",
+			"footer",
+		},
+	)
+
+	server := goroot.New(goroot.Config{
+		Pages: pagesConfig,
+	})
+
+	server.Listen()
+}
+```
+Once our templates have been configured on the server, it is time to create the routes that were defined in the navbar component.
+
+### home.html
+```html
+{{define "content" .}}
+<div class="home-container">
+	<h1>GoRoot</h1>
+	<p>Golang Backend Module</p>
+</div>
+{{end}}
+```
+### about.html
+```html
+{{define "content" .}}
+<div class="home-container">
+	<h1>About</h1>
+	<p>{{.Content}}</p>
+</div>
+{{end}}
+```
+
+In the main.go file we create the paths for the home and about pages.
+
+### main.go
+```go
+// main.go
+package main
+
+import (
+	"github.com/rootspyro/goroot"
+	"github.com/rootspyro/goroot/pages"
+)
+
+func main() {
+
+	pagesConfig := pages.NewPages(
+		"layout", // the main template that was defined in index.html
+		"./templates", // the local dir of the html templates in the code
+		[]string{ // the name of the essential files without the extension .html
+			"index",
+			"navbar",
+			"footer",
+		},
+	)
+
+	server := goroot.New(goroot.Config{
+		Pages: pagesConfig,
+	})
+
+	server.Get("/", func(root *goroot.Root) {
+	
+		// The RenderTemplate function recieves the name
+		// of the file with the content and the data
+		// root.RenderTemplate(filename, data)
+		root.RenderTempate("home", Page{Title:"GoRoot"})
+	})
+
+	server.Get("/about", func(root *goroot.Root) {
+		root.RenderTempate("about", Page{
+			Title: "About",
+			Content: "This is the content of the about page",
+		})
+	})
+
+	server.Listen()
+}
+
+type Page struct {
+	Title string
+	Content string
+}
+```
+
+
+## The End 
+And that's all about the GoRoot Documentation. Thanks for reading it.
+
+I give you a duck. 🦆
